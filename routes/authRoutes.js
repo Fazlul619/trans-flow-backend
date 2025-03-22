@@ -42,21 +42,24 @@ router.post("/signup", async (req, res) => {
   });
 
 
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ error: "Invalid credentials" });
+  router.post("/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      const user = await User.findOne({ email });
+  
+      if (!user || !(await bcrypt.compare(password, user.password))) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+  
+      const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  
+      res.json({
+        token,
+        user: { id: user._id, fullName: user.fullName, email: user.email, role: user.role },
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
     }
-
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-    res.json({ token, user: { id: user._id, fullName: user.fullName, email: user.email, role: user.role } });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
+  });
+  
 module.exports = router;

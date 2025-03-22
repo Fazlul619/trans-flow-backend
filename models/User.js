@@ -1,12 +1,19 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
-const userSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, default: 'user' },
+  password: { type: String, required: false }, // FIX: Allow empty password for OAuth users
+  role: { type: String, enum: ["admin", "user"], default: "user" },
+}, { timestamps: true });
+
+// Hash password only if provided
+UserSchema.pre("save", async function (next) {
+  if (this.password && this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+  next();
 });
 
-const User = mongoose.model('User', userSchema);
-
-module.exports = User;
+module.exports = mongoose.model("User", UserSchema);
