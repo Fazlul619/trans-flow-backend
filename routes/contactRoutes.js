@@ -7,30 +7,31 @@ const sendEmailWithPDF = require("../utils/emailService");
 const fs = require("fs");
 
 router.post("/", async (req, res) => {
-    try {
-      // Save contact to database
+  try {
+      console.log("Received contact request:", req.body);
+
       const newContact = new Contact(req.body);
       await newContact.save();
-  
-      // Generate PDF
+      console.log("Contact saved:", newContact);
+
       const pdfPath = await generatePDF(newContact);
-  
-      // Send email with PDF attachment
+      console.log("PDF generated at:", pdfPath);
+
       await sendEmailWithPDF(newContact, pdfPath);
-  
-      // ✅ Delete the PDF file after sending the email
+      console.log("Email sent successfully!");
+
       if (fs.existsSync(pdfPath)) {
-        fs.unlinkSync(pdfPath);
+          fs.unlinkSync(pdfPath);
+          console.log("PDF deleted:", pdfPath);
       }
-  
+
       res.status(201).json({ message: "Contact saved & email sent!" });
-    } catch (err) {
-      console.error("Error:", err);
-  
-      // Handle errors properly
+  } catch (err) {
+      console.error("Error in contact submission:", err);
       res.status(500).json({ error: err.message });
-    }
-  });
+  }
+});
+
 
 
 router.get("/", authMiddleware, adminMiddleware, async (req, res) => {
@@ -49,7 +50,7 @@ router.get("/download/:id", async (req, res) => {
   
       const pdfPath = await generatePDF(contact);
       res.download(pdfPath, `${contact.name}_contact.pdf`, () => {
-        // Delete the temp file after sending
+        
         fs.unlinkSync(pdfPath);
       });
     } catch (err) {

@@ -2,32 +2,43 @@ const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
 
-const generatePDF = async (contactData) => {
-  return new Promise((resolve, reject) => {
-    const tempDir = path.join(__dirname, "temp"); // Define temp directory
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true }); // Ensure temp directory exists
-    }
+const generatePDF = async (contact) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const tempDir = path.join(__dirname, "../temp");
 
-    const filePath = path.join(tempDir, `${contactData.name}_contact.pdf`);
-    const doc = new PDFDocument();
-    const stream = fs.createWriteStream(filePath);
+            // Ensure temp directory exists
+            if (!fs.existsSync(tempDir)) {
+                fs.mkdirSync(tempDir);
+                console.log("✅ Created temp directory:", tempDir);
+            }
 
-    doc.pipe(stream);
+            const pdfPath = path.join(tempDir, `${contact.name}_contact.pdf`);
+            const doc = new PDFDocument();
+            const stream = fs.createWriteStream(pdfPath);
 
-    // PDF Content
-    doc.fontSize(20).text("Contact Information", { align: "center" });
-    doc.moveDown();
-    doc.fontSize(14).text(`Name: ${contactData.name}`);
-    doc.text(`Email: ${contactData.email}`);
-    doc.text(`Message: ${contactData.message}`);
+            doc.pipe(stream);
+            doc.fontSize(20).text("Contact Information", { align: "center" });
+            doc.moveDown();
+            doc.text(`Name: ${contact.name}`);
+            doc.text(`Email: ${contact.email}`);
+            doc.text(`Message: ${contact.message}`);
+            doc.end();
 
-    doc.end();
+            stream.on("finish", () => {
+                console.log("✅ PDF successfully created at:", pdfPath);
+                resolve(pdfPath);
+            });
 
-    // Handle stream events properly
-    stream.on("finish", () => resolve(filePath)); // Resolve after writing
-    stream.on("error", (err) => reject(err)); // Reject if there's an error
-  });
+            stream.on("error", (err) => {
+                console.error("❌ Error writing PDF:", err);
+                reject(err);
+            });
+        } catch (err) {
+            console.error("❌ Error generating PDF:", err);
+            reject(err);
+        }
+    });
 };
 
 module.exports = generatePDF;
