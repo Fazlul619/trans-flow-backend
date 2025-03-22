@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Contact = require("../models/Contact");
+const { authMiddleware, adminMiddleware } = require("../middleware/authMiddleware");
 
 router.post("/", async (req, res) => {
   try {
@@ -12,13 +13,15 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
-  try {
-    const contacts = await Contact.find();
-    res.json(contacts);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// Get all contacts (Admin only)
+router.get("/", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const contacts = await Contact.find();
+      res.json(contacts);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+  
 
 module.exports = router;
