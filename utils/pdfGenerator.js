@@ -7,10 +7,10 @@ const generatePDF = async (contact) => {
         try {
             const tempDir = path.join(__dirname, "../temp");
 
-            // Ensure temp directory exists
+            
             if (!fs.existsSync(tempDir)) {
                 fs.mkdirSync(tempDir);
-                console.log("✅ Created temp directory:", tempDir);
+                
             }
 
             const pdfPath = path.join(tempDir, `${contact.name}_contact.pdf`);
@@ -26,16 +26,13 @@ const generatePDF = async (contact) => {
             doc.end();
 
             stream.on("finish", () => {
-                console.log("✅ PDF successfully created at:", pdfPath);
                 resolve(pdfPath);
             });
 
             stream.on("error", (err) => {
-                console.error("❌ Error writing PDF:", err);
                 reject(err);
             });
         } catch (err) {
-            console.error("❌ Error generating PDF:", err);
             reject(err);
         }
     });

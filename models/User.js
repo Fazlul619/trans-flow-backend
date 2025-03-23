@@ -4,11 +4,11 @@ const bcrypt = require("bcryptjs");
 const UserSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: false }, // FIX: Allow empty password for OAuth users
+  password: { type: String, required: false },
   role: { type: String, enum: ["admin", "user"], default: "user" },
 }, { timestamps: true });
 
-// Hash password only if provided
+
 UserSchema.pre("save", async function (next) {
   if (this.password && this.isModified("password")) {
     this.password = await bcrypt.hash(this.password, 10);

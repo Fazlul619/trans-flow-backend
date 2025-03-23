@@ -5,6 +5,8 @@ const { authMiddleware, adminMiddleware } = require("../middleware/authMiddlewar
 const generatePDF = require("../utils/pdfGenerator");
 const sendEmailWithPDF = require("../utils/emailService");
 const fs = require("fs");
+const mongoose = require("mongoose");
+
 
 router.post("/", async (req, res) => {
   try {
@@ -57,6 +59,27 @@ router.get("/download/:id", async (req, res) => {
       res.status(500).json({ error: err.message });
     }
 });
-  
+
+router.get("/:id", async (req, res) => {
+  try {
+      const contactId = req.params.id;
+      if (!mongoose.Types.ObjectId.isValid(contactId)) {
+          return res.status(400).json({ error: "Invalid contact ID format" });
+      }
+
+      const contact = await Contact.findById(contactId);
+
+      if (!contact) {
+          return res.status(404).json({ error: "Contact not found" });
+      }
+
+      console.log("Contact found:", contact);
+      res.json(contact);
+  } catch (err) {
+      console.error("Error fetching contact:", err);
+      res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 module.exports = router;

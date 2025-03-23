@@ -17,20 +17,20 @@ passport.use(
         let user = await User.findOne({ email: profile.emails[0].value });
 
         if (!user) {
-          // Ensure `fullName` is assigned
+          
           const fullName = profile.displayName || profile.name?.givenName || "Google User";
 
           user = new User({
-            fullName, // FIX: Ensure fullName is not empty
+            fullName, 
             email: profile.emails[0].value,
-            password: "OAuth", // No password required for OAuth users
+            password: "OAuth", 
             role: "admin",
           });
 
           await user.save();
         }
 
-        // Generate JWT Token
+        
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
         return done(null, { user, token });
