@@ -31,7 +31,14 @@ router.get(
   "/facebook/callback",
   passport.authenticate("facebook", { session: false }),
   (req, res) => {
-    const { token } = req.user;
+    if (!req.user) {
+      return res.status(401).json({ error: "Authentication failed" });
+    }
+
+
+    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+
     res.redirect(`http://localhost:5173/oauth-success?token=${token}`);
   }
 );
