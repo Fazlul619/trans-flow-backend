@@ -17,7 +17,11 @@ router.get(
     }
 
     
-    res.redirect(`http://localhost:5173/oauth-success?token=${req.user.token}`);
+    res.redirect(
+      `http://localhost:5173/oauth-success?token=${req.user.token}&user=${encodeURIComponent(
+        JSON.stringify(req.user.user)
+      )}`
+    );
   }
 );
 
