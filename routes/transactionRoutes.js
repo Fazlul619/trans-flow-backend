@@ -31,15 +31,22 @@ router.put("/:id", async (req, res) => {
   try {
     const { status } = req.body;
     const transaction = await Transaction.findById(req.params.id);
-    if (!transaction) return res.status(404).json({ error: "Transaction not found" });
 
-    transaction.status = status;
-    await transaction.save();
+    if (!transaction) {
+      return res.status(404).json({ error: "Transaction not found" });
+    }
 
-    if (status === "Approved") {
-      await User.findByIdAndUpdate(transaction.userId, {
-        $inc: { credit: transaction.amount }
-      });
+    
+    if (transaction.status !== status) {
+      transaction.status = status;
+      await transaction.save();
+
+      
+      if (status === "Approved") {
+        await User.findByIdAndUpdate(transaction.userId, {
+          $inc: { credit: transaction.amount }
+        });
+      }
     }
 
     res.json({ message: `Transaction ${status}`, transaction });
